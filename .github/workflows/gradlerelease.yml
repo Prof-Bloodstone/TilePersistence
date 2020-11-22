@@ -1,0 +1,70 @@
+# This workflow will build a package using Gradle and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java#publishing-using-gradle
+
+name: Release
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 30
+      - run: git fetch --tags
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build with Gradle
+        run: |
+          ./gradlew shadowJar
+          mv -v build/libs/TilePersistence{-*,}.jar
+      - name: Prepare release description
+        id: prepare_release_description
+        shell: bash
+        run: |
+          PREV_TAG="$(git describe --abbrev=0 --tags HEAD^ --match 'v*')"
+          GIT_ARGS=(
+            "${PREV_TAG}..." # Get all commits since last tag ( release )
+            --no-merges # Ignore merge commits
+            --grep 'CI SKIP' --invert-grep # Ignore CI SKIP commits
+            --pretty='%h %s - %aN' # <short hash> <commit title> - <author name>
+            )
+          DESCRIPTION="$(git log "${GIT_ARGS[@]}")"
+          printf 'DESCRIPTION:\n%s\n' "${DESCRIPTION}"
+          # See https://github.community/t5/GitHub-Actions/set-output-Truncates-Multiline-Strings/td-p/37870
+          DESCRIPTION="${DESCRIPTION//'%'/'%25'}"
+          DESCRIPTION="${DESCRIPTION//$'\n'/'%0A'}"
+          DESCRIPTION="${DESCRIPTION//$'\r'/'%0D'}"
+          printf '::set-output name=DESCRIPTION::%s' "${DESCRIPTION}"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: "${{ steps.prepare_release_description.outputs.description }}"
+          draft: false
+          prerelease: false
+      - name: Upload Release Jar
+        id: upload_release_jar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: '${{ steps.create_release.outputs.upload_url }}'
+          asset_path: 'build/libs/TilePersistence.jar'
+          asset_name: TilePersistence.jar
+          asset_content_type: application/zip
+

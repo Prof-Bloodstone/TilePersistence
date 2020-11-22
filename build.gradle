@@ -4,7 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 plugins {
     id 'java-library'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
-    id 'com.diffplug.gradle.spotless' version '3.29.0'
+    id 'com.diffplug.spotless' version '5.8.2'
     id 'com.github.johnrengelman.shadow' version '6.0.0'
 }
 
@@ -75,7 +75,7 @@ spotless {
         indentWithSpaces(4)
     }
     kotlin {
-        ktlint('0.36.0')
+        ktlint('0.39.0')
         licenseHeader """
 /*
  *  ${name} - ${description}
