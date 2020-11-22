@@ -1,0 +1,99 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'com.diffplug.gradle.spotless' version '3.29.0'
+    id 'com.github.johnrengelman.shadow' version '6.0.0'
+}
+
+description = 'Persist TEs name and lore'
+group = 'dev.bloodstone'
+version = '1.0.0'
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenLocal()
+    maven {
+        name = 'papermc'
+        url = 'https://papermc.io/repo/repository/maven-public/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compileOnlyApi group: 'com.destroystokyo.paper', name: 'paper-api', version: '1.16.4-R0.1-SNAPSHOT'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation group: 'dev.bloodstone', name: 'mcutils', version: '0.0.3'
+    implementation group: 'io.papermc', name: 'paperlib', version: '1.0.4'
+}
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "${project.property('group')}.${project.property('name').toString().toLowerCase()}.lib"
+}
+
+shadowJar {
+    dependsOn tasks.relocateShadowJar
+    minimize()
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [
+                version: version,
+                description: description,
+        ]
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8' // Encode your source code with UTF-8
+    options.compilerArgs += ["-parameters"]
+}
+
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        javaParameters = true
+    }
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+spotless {
+    format 'misc', {
+        target '**/*.gradle', '**/*.md'
+        trimTrailingWhitespace()
+        indentWithSpaces(4)
+    }
+    kotlin {
+        ktlint('0.36.0')
+        licenseHeader """
+/*
+ *  ${name} - ${description}
+ *  Copyright (C) 2020  Prof_Bloodstone
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+"""
+    }
+}
