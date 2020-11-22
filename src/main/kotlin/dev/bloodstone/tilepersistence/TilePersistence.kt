@@ -1,6 +1,6 @@
 
 /*
- *  tilepersistence - Persist TEs name and lore
+ *  TilePersistence - Persist TEs name and lore
  *  Copyright (C) 2020  Prof_Bloodstone
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package dev.bloodstone.tilepersistence
 import dev.bloodstone.mcutils.datatypes.JsonDataType
 import io.papermc.lib.PaperLib
 import io.papermc.lib.features.blockstatesnapshot.BlockStateSnapshotResult
-import java.util.Arrays
 import org.bukkit.NamespacedKey
 import org.bukkit.block.TileState
 import org.bukkit.event.EventHandler
@@ -30,6 +29,7 @@ import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
+import java.util.Arrays
 
 public class TilePersistence() : JavaPlugin(), Listener {
     private val NAME_KEY: NamespacedKey = NamespacedKey(this, "name")
