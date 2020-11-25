@@ -1,6 +1,6 @@
 name: TilePersistence
 version: @version@
 main: dev.bloodstone.tilepersistence.TilePersistence
-api-version: 1.13
+api-version: 1.14
 authors: [ Prof_Bloodstone ]
 description: @description@
